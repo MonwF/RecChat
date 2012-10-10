@@ -5,7 +5,7 @@
       "persistent": true
    },
    "content_scripts": [{
-      "matches": ["http://web.qq.com/*"],
+      "matches": ["http://web.qq.com/"],
       "js": ["chat.js"]
    }],
    "description": "\u901A\u8FC7local database\u4FDD\u5B58webQQ\u7684\u804A\u5929\u8BB0\u5F55",
@@ -19,7 +19,7 @@
       "default_icon": "chat_48.png",
       "default_title": "\u6253\u5F00\u6211\u7684\u804A\u5929\u8BB0\u5F55"
    },
-   "permissions": ["tabs", "http://web.qq.com/*", "unlimitedStorage" ],
+   "permissions": ["tabs", "http://web.qq.com/", "unlimitedStorage" ],
    "update_url": "http://clients2.google.com/service/update2/crx",
    "version": "1.1",
    "minimum_chrome_version": "21.0.0"

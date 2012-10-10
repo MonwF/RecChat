@@ -26,34 +26,19 @@ function dec(s){
 function db_init(){
     window.db = openDatabase('chatrec', '1.0', 'Chat Record', 20*1024*1024);
     window.db.transaction(function(tx){
-        tx.executeSql("CREATE TABLE IF NOT EXISTS 'chat' ('tab_id' INTEGER, 'msg_id' INTEGER, 'owner' VARCHAR NOT NULL , 'sender' VARCHAR NOT NULL, 'receiver' VARCHAR NOT NULL, 'time' DATETIME, 'text' VARCHAR);");
+        tx.executeSql("CREATE TABLE IF NOT EXISTS 'chat' ('owner' VARCHAR NOT NULL , 'sender' VARCHAR NOT NULL, 'receiver' VARCHAR NOT NULL, 'time' DATETIME, 'text' VARCHAR);");
     });
 }
 
 function db_add_record(tab_id, msg_id, owner, sender, receiver, time, text){
     window.db.transaction(function(tx){
-        tx.executeSql("INSERT INTO 'chat' ('tab_id', 'msg_id', 'owner', 'sender', 'receiver', 'time', 'text') VALUES ("
-            + "" + (tab_id) + ", "
-            + "" + (msg_id) + ", "
+        tx.executeSql("INSERT INTO 'chat' ('owner', 'sender', 'receiver', 'time', 'text') VALUES ("
             + "'" + enc_sql(owner) + "', "
             + "'" + enc_sql(enc(sender)) + "', "
             + "'" + enc_sql(enc(receiver)) + "', "
             + "'" + enc_sql(time) + "', "
             + "'" + enc_sql(enc(text)) + "');"
             );
-    });
-}
-
-function db_mod_record(tab_id, msg_id, owner, sender, receiver, time, text){
-    window.db.transaction(function(tx){
-        tx.executeSql("UPDATE 'chat' SET "
-            + "owner='" + enc_sql(owner) + "', "
-            + "sender='" + enc_sql(enc(sender)) + "', "
-            + "receiver='" + enc_sql(enc(receiver)) + "', "
-            + "text='" + enc_sql(enc(text)) + "' "
-            + "WHERE time='" + enc_sql(time) + "' "
-            + "AND tab_id=" + (tab_id) + " "
-            + "AND msg_id=" + (msg_id) + ";");
     });
 }
 
@@ -64,18 +49,6 @@ chrome.extension.onMessage.addListener(
         }
         if(request.cmd == "add_rec"){
             db_add_record(
-                sender.tab.id,
-                request.msg_id,
-                request.my_id,
-                request.sender_name,
-                request.receiver_name,
-                request.time,
-                request.text);
-        }
-        else if(request.cmd == "mod_rec"){
-            db_mod_record(
-                sender.tab.id,
-                request.msg_id,
                 request.my_id,
                 request.sender_name,
                 request.receiver_name,
