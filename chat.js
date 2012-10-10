@@ -1,5 +1,4 @@
-﻿var g_msg_no = 0;
-var g_icon_show = false;
+﻿var g_icon_show = false;
 var g_uin = 0;
 var g_nick = '';
 
