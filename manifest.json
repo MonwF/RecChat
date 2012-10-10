@@ -1,0 +1,21 @@
+{
+   "background_page": "background.html",
+   "content_scripts": [ {
+      "js": [ "chat.js" ],
+      "matches": [ "http://web.qq.com/*" ]
+   } ],
+   "description": "\u901A\u8FC7local database\u4FDD\u5B58webQQ\u7684\u804A\u5929\u8BB0\u5F55",
+   "icons": {
+      "128": "chat_128.png",
+      "48": "chat_48.png"
+   },
+   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC0iMs04craKCRai90VUtj4zOSp0ayztivlrDgigb1zXts72DB8BAOC+aF29Q4UyB+X/7PL+ATVj/ZqS6ouz89tO6owXipEY5+B2baN5mNzYXdgTxPFGiXtu30YdZMBvSSjTTApRhanPUP3CKKsYpHZG4nnK1/XpOIpqaRiWcLi1QIDAQAB",
+   "name": "webqq \u804A\u5929\u8BB0\u5F55\u4FDD\u5B58",
+   "page_action": {
+      "default_icon": "chat_48.png",
+      "default_title": "\u6253\u5F00\u6211\u7684\u804A\u5929\u8BB0\u5F55"
+   },
+   "permissions": [ "tabs", "http://web.qq.com", "unlimitedStorage" ],
+   "update_url": "http://clients2.google.com/service/update2/crx",
+   "version": "1.0.4"
+}
