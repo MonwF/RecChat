@@ -1,5 +1,11 @@
 ﻿var g_msg_no = 0;
 var g_icon_show = false;
+var g_uin = 0;
+var g_nick = '';
+
+function getById = function (id){
+    return document.getElementById(id);
+}
 
 function no_sp(s){
     console.log('Not supported: ' + s);
@@ -9,28 +15,31 @@ function update_login_state(){
     var qqwin = document.querySelector("#EQQ_LoginSuccess");
     if(qqwin && !g_icon_show){
         g_icon_show = true;
-        chrome.extension.sendRequest({'cmd': 'show'});
+        chrome.extension.sendMessage({'cmd': 'show'});
     }
     else if(!qqwin && g_icon_show){
         g_icon_show = false;
-        chrome.extension.sendRequest({'cmd': 'hide'});
+        chrome.extension.sendMessage({'cmd': 'hide'});
     }
+    getQQUser();
+    return !!qqwin;
 }
 
 function onDOMContentLoaded(){
     var o = document.querySelector("#desktop");
     if(o){
         o.addEventListener("DOMSubtreeModified", function(){
-            update_login_state();
-            
-            var msgLists = document.querySelectorAll(".chatBox_msgList");
-            var lenth = msgLists.length;
-            for(var i = 0; i < lenth; ++i){
-                if(!msgLists[i].getAttribute('chatrec_set_DOMSubtreeModified_event')){
-                    msgLists[i].setAttribute('chatrec_set_DOMSubtreeModified_event', "1");
-                    msgLists[i].addEventListener("DOMSubtreeModified", function(){
-                        onMsgModified(this);
-                    }, true);
+            var isLogin = update_login_state();
+            if(isLogin){
+                var msgLists = document.querySelectorAll("#desktopsContainer .chatBox_msgList");
+                var lenth = msgLists.length;
+                for(var i = 0;i < lenth;i++){
+                    if(!msgLists[i].getAttribute('chatrec_EventAdded')){
+                        msgLists[i].setAttribute('chatrec_EventAdded', "1");
+                        msgLists[i].addEventListener("DOMSubtreeModified", function(){
+                            onMsgModified(this);
+                        }, true);
+                    }
                 }
             }
         }, true);
@@ -38,23 +47,17 @@ function onDOMContentLoaded(){
 }
 
 function getQQUser(){
-    var my_id = 0;
-    var my_name = "";
-    var qqImg = document.querySelector("#EQQ_MyAvatar");
+    var qqImg = getById("EQQ_MyAvatar");
     if(qqImg){
-        my_id = qqImg.getAttribute('uin');
+        g_uin = qqImg.getAttribute('uin');
+        var qqNick = getById("EQQ_MyNick");
+        if(qqNick){
+            g_nick = qqNick.innerText;
+        }
     }
-    var qqNick = document.querySelector("#EQQ_MyNick");
-    if(qqNick){
-        my_name = qqNick.innerText;
-    }
-
-    console.log('getQQUser ', my_id, my_name);
-    if(!my_id){
-        return null;
-    }
-    else{
-        return {my_id: my_id, my_name: my_name};
+    else {
+        g_uin = 0;
+        g_nick = '';
     }
 }
 
@@ -77,11 +80,7 @@ function getText(o){
 }
 
 function onMsgModified(o){
-    var me = getQQUser();
-    if(!me){
-        no_sp('getQQUser()');
-        return ;
-    }
+    if(g_uin == 0) return ;
 
     var msgListWin = o;
 
@@ -126,11 +125,10 @@ function onMsgModified(o){
 
         var sender_id;
         if(msg.className === 'chatBox_myMsg'){
-            sender_id = me.my_id;	///my duin
+            sender_id = g_uin;	//my uin
         }
         else if(msg.className === 'chatBox_buddyMsg'){
             sender_id = msg.getAttribute('duin');
-            if(sender_id === null) {no_sp('sender_id'); return;}
         }
         
         messages[messages.length] = JSON.stringify({
@@ -202,10 +200,10 @@ function onMsgModified(o){
         msg_ex = JSON.parse(msg_ex);
         
         //console.log('mod ', msg_id, msg.sender_id, msg_ex.sender_name, msg.receiver_id, msg_ex.receiver_name, msg.time, msg_ex.text);
-        chrome.extension.sendRequest({
+        chrome.extension.sendMessage({
             'cmd': 'mod_rec',
-            'my_id': me.my_id,
-            'my_name': me.my_name,
+            'my_id': g_uin,
+            'my_name': g_nick,
             'msg_id': msg_id,
             'sender_id': msg.sender_id,
             'sender_name': msg_ex.sender_name,
@@ -229,10 +227,10 @@ function onMsgModified(o){
         msg_ex = JSON.parse(msg_ex);
         //console.log('add ', msg_id, msg.sender_id, msg_ex.sender_name, msg.receiver_id, msg_ex.receiver_name, msg.time, msg_ex.text);
         
-        chrome.extension.sendRequest({
+        chrome.extension.sendMessage({
             'cmd': 'add_rec',
-            'my_id': me.my_id,
-            'my_name': me.my_name,
+            'my_id': g_uin,
+            'my_name': g_nick,
             'msg_id': msg_id,
             'sender_id': msg.sender_id,
             'sender_name': msg_ex.sender_name,
@@ -251,10 +249,10 @@ function onMsgModified(o){
 (function(){
     onDOMContentLoaded();
 
-    chrome.extension.onRequest.addListener(
+    chrome.extension.onMessage.addListener(
         function(request, sender, sendResponse){
             if(request.cmd == "get_owner"){
-                sendResponse({owner: getQQUser()});
+                sendResponse(g_uin);
             }
         });
 })();
