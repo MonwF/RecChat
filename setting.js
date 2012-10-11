@@ -127,8 +127,8 @@ var g_receiver_start = 0;
 var g_receiver_count = 0;
 var g_current_page = 0;
 var g_search_keyword = "";
-var msg_count_per_page = 20;
-var max_pages_in_title = 12;
+var msg_count_per_page = 2;
+var max_pages_in_title = 5;
 
 var elmCrtReceiver = null;
 
@@ -167,6 +167,23 @@ $('receiver_list').onclick = function (e){
         $('q').value = '';
     }
 };
+$('message_page_title').onclick = function (e){
+    var _target = e.target;
+    var eid = _target.id;
+    if(_target.nodeName == 'A' && eid != 'curPage'){
+        e.preventDefault();
+        if(/pg(\d+)/.test(eid)){
+            load_record_tx(RegExp.$1);
+        }
+        else if(eid == 'pgnew'){
+            show_title_closer();
+        }
+        else if(eid == 'pgold'){
+            show_title_ealier();
+        }
+    }
+};
+$('search-btn').onclick = search;
 
 function get_receiver_list(tx, owner_id, on_get){
     tx.executeSql("SELECT DISTINCT receiver FROM MSG WHERE owner=" + owner_id + ";", [], 
@@ -256,18 +273,17 @@ function load_record(tx){
 
 function load_record_tx(toPage){
     var oldE = $("curPage");
-    oldE.setAttribute("id", "pg" + g_current_page);
-    oldE.setAttribute("href", 'javascript:' + enc_html('load_record_tx(' + g_current_page +');'));
+    oldE.id = "pg" + g_current_page;
+    oldE.setAttribute("href", '#');
     
     g_current_page = toPage;
     g_receiver_start = g_current_page * msg_count_per_page;
     
     var newE = $("pg" + g_current_page);
-    newE.setAttribute("id", "curPage");
+    newE.id = 'curPage';
     newE.removeAttribute("href");
     
-    window.db.transaction(function(tx)
-    {
+    window.db.transaction(function(tx){
         load_record(tx);
     });
 }
@@ -292,18 +308,18 @@ function show_title(){
     var title_page_start = Math.floor(g_current_page / max_pages_in_title) * max_pages_in_title;
 
     if(title_page_start > 0)
-        s += '<a href="javascript:'+enc_html('show_title_closer();')+'">更近</a>';
+        s += '<a id="pgnew" href="#">更近</a>';
 
     for(i = title_page_start; i * msg_count_per_page < g_receiver_count && i < title_page_start + max_pages_in_title; ++i){
         if(i != g_current_page){
-            s += '<a id="pg' + i +'" href="javascript:' + enc_html('load_record_tx(' + i +');')+'">' + (i+1) + '</a>';
+            s += '<a id="pg' + i +'" href="#">' + (i+1) + '</a>';
         }
         else {
             s += '<a id="curPage">' + (i+1) + '</a>';
         }
     }
     if(i * msg_count_per_page < g_receiver_count)
-        s += '<a href="javascript:'+enc_html('show_title_ealier();')+'">更早</a>';
+        s += '<a id="pgold" href="#">更早</a>';
 
     $('message_page_title').innerHTML = s;
 
