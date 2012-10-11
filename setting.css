@@ -1,11 +1,11 @@
 ﻿body{
-    font-size: 12px;
+    font: 12px normal "微软雅黑";
 }
 
-#receiver_area  {
+#receiver_area{
     border-radius: 5px;
     float: left;
-    background: #DBEDF6;
+    background: #F1F1F1;
     padding: 8px;
     width: 200px;
     margin-left: -100%;
@@ -19,13 +19,20 @@
 
 #receiver_title {
     font-weight: bold;
-    white-space: nowrap;    
+    white-space: nowrap;
+    margin-bottom: 2px;
+    color: #333;
 }
 
-#receiver_title > a{
+#receiver_title  a{
     font-weight: normal;
     margin-left: 30px;
     float: right;
+    color: #4588FF;
+    text-decoration: none;
+}
+#receiver_title a:hover{
+    color: #F60;
 }
 
 #message_area   {
@@ -33,7 +40,7 @@
     width: 100%;
 }
 
-#message_title  {
+#message_title{
     background-color: lightgray;
     width: 100%;
     white-space: nowrap;
@@ -55,16 +62,30 @@
     margin-top: 2px;
 }
 
-#message_list   {
+#message_list {
     clear: both;
 }
 
-.receiver   {
+.receiver {
     white-space: nowrap;
-    padding-top: 5px;
+    line-height: 20px;
+    cursor: pointer;
+    padding-left: 8px;
+    color: #969696;
+    margin: 0;
 }
 
-.msg_item   {
+.receiver:hover{
+    background-color: #E8F0CB;
+    color: #88A6E0;
+}
+
+#receiver_list .cur-receiver{
+    background-color: #A2DDB3;
+    color: #3366CB;
+}
+
+.msg_item {
     padding: 6px 0;
 }
 

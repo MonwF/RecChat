@@ -26,13 +26,17 @@ function dec(s){
 function db_init(){
     window.db = openDatabase('chatrec', '1.0', 'Chat Record', 20*1024*1024);
     window.db.transaction(function(tx){
-        tx.executeSql("CREATE TABLE IF NOT EXISTS 'chat' ('owner' VARCHAR NOT NULL , 'sender' VARCHAR NOT NULL, 'receiver' VARCHAR NOT NULL, 'time' DATETIME, 'text' VARCHAR);");
+        tx.executeSql("CREATE TABLE IF NOT EXISTS MSG ('owner' VARCHAR NOT NULL , 'sender' VARCHAR NOT NULL, 'receiver' VARCHAR NOT NULL, 'time' DATETIME, 'text' VARCHAR);");
+    });
+    window.db.transaction(function(tx){
+        tx.executeSql("INSERT INTO MSG SELECT OWNER,SENDER,RECEIVER,TIME,TEXT FROM CHAT");
+        tx.executeSql('DROP TABLE IF EXISTS CHAT');
     });
 }
 
 function db_add_record(owner, sender, receiver, time, text){
     window.db.transaction(function(tx){
-        tx.executeSql("INSERT INTO 'chat' ('owner', 'sender', 'receiver', 'time', 'text') VALUES ("
+        tx.executeSql("INSERT INTO MSG ('owner', 'sender', 'receiver', 'time', 'text') VALUES ("
             + "'" + enc_sql(owner) + "', "
             + "'" + enc_sql(enc(sender)) + "', "
             + "'" + enc_sql(enc(receiver)) + "', "
