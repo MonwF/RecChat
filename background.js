@@ -30,7 +30,7 @@ function db_init(){
     });
 }
 
-function db_add_record(tab_id, msg_id, owner, sender, receiver, time, text){
+function db_add_record(owner, sender, receiver, time, text){
     window.db.transaction(function(tx){
         tx.executeSql("INSERT INTO 'chat' ('owner', 'sender', 'receiver', 'time', 'text') VALUES ("
             + "'" + enc_sql(owner) + "', "

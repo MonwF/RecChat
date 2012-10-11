@@ -84,10 +84,8 @@ window.db.transaction(function(tx){
 
 function get_receiver_list(tx, owner_id, on_get){
     tx.executeSql("SELECT DISTINCT receiver FROM 'chat' WHERE owner=" + owner_id + ";", [], 
-        function(tx, result)
-        {
+        function(tx, result){
             on_get(result.rows);
-
         },
         function(tx, error){}
     );
