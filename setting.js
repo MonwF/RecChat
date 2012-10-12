@@ -127,7 +127,7 @@ var g_receiver_start = 0;
 var g_receiver_count = 0;
 var g_current_page = 0;
 var g_search_keyword = "";
-var msg_count_per_page = 2;
+var msg_count_per_page = 20;
 var max_pages_in_title = 10;
 
 var elmCrtReceiver = null;
@@ -147,8 +147,6 @@ window.db.transaction(function(tx){
            elmCrtReceiver = $('receiver_list').firstChild;
            $.css.addClass(elmCrtReceiver, 'cur-receiver');
            g_receiver = elmCrtReceiver.innerText;
-           g_receiver_start = 0;
-           g_search_keyword = "";
            load_receiver(tx);
        }
    });
@@ -219,12 +217,12 @@ function get_message_count(tx, owner_id, receiver, search_keyword, on_get){
     );
 }
 
-function get_message_list(tx, owner_id, receiver, search_keyword, start, count, on_get){
+function get_message_list(tx, owner_id, receiver, search_keyword, start, on_get){
     var sql;
     if(search_keyword === ""){
-        sql = "SELECT * FROM MSG WHERE owner=" + owner_id + " AND receiver='" + enc_sql(enc(receiver)) + "' "
-            + "ORDER BY time LIMIT '" + count + "' "
-            + "OFFSET '" + start + "';";
+        sql = "SELECT rowid, * FROM MSG WHERE owner=" + owner_id + " AND receiver='" + enc_sql(enc(receiver)) + "' "
+            + "ORDER BY time LIMIT " + msg_count_per_page + " "
+            + "OFFSET " + start + ";";
     }
     else{
         if(receiver === "") receiver = "%";
@@ -233,8 +231,8 @@ function get_message_list(tx, owner_id, receiver, search_keyword, start, count, 
         search_keyword = enc_sql('%'+enc(search_keyword)+'%');
         search_keyword = search_keyword.replace(/\/(33\/)+/g, '/%');
 
-        sql = "SELECT * FROM MSG WHERE owner=" + owner_id + " AND receiver LIKE '" + receiver + "' AND (text LIKE '" + search_keyword + "' OR sender LIKE '" + search_keyword + "') "
-            + "ORDER BY time LIMIT '" + count + "' "
+        sql = "SELECT rowid, * FROM MSG WHERE owner=" + owner_id + " AND receiver LIKE '" + receiver + "' AND (text LIKE '" + search_keyword + "' OR sender LIKE '" + search_keyword + "') "
+            + "ORDER BY time LIMIT " + msg_count_per_page + " "
             + "OFFSET '" + start + "';";
     }
 
@@ -252,22 +250,19 @@ function load_record(tx){
         return;
     }
 
-    var receiver = g_receiver;
-
     var reverse_start = g_receiver_count - g_receiver_start - msg_count_per_page;
-    var reverse_count = (reverse_start < 0 ? msg_count_per_page + reverse_start : msg_count_per_page);
     if(reverse_start < 0) reverse_start = 0;
-    if(reverse_count < 0) reverse_count = 0;
 
-    get_message_list(tx, owner_id, receiver, g_search_keyword, reverse_start, reverse_count, function(rows){
+    get_message_list(tx, owner_id, g_receiver, g_search_keyword, reverse_start, function(rows){
         var lenth = rows.length;
-        var s = '';
-        for(var i = lenth;i-- > 0;){
+        var s = '', msg = null;
+        for(var i = lenth - 1;i >= 0;i--){
+            msg = rows.item(i);
             s += '<div class="msg_item">';
-            s += '<input class="check_delete" type="checkbox"' + '" msg_time="' + enc_html(rows.item(i).time) + '" />';
-            s += '<span class="msg_sender">' + enc_html(dec(rows.item(i).sender)) + '</span>';
-            s += '<span class="msg_time">' + enc_html(rows.item(i).time) + '</span>';
-            s += '<p class="msg_text">' + dec(rows.item(i).text) + '</p>';
+            s += '<input class="check_delete" type="checkbox"' + '" msg_id="' + msg.rowid + '" />';
+            s += '<span class="msg_sender">' + enc_html(dec(msg.sender)) + '</span>';
+            s += '<span class="msg_time">' + enc_html(msg.time) + '</span>';
+            s += '<p class="msg_text">' + dec(msg.text) + '</p>';
             s += '</div>';
         }
         $('message_list').innerHTML = s;
@@ -350,12 +345,8 @@ function delete_select(){
     if(confirm("确定要删除选中的 " + lenth + "条记录吗？")){
         window.db.transaction(function(tx){
             for(var i = 0; i < lenth; ++i){
-                var tab_id = checks[i].getAttribute('msg_tab_id');
-                var msg_id = checks[i].getAttribute('msg_msg_id');
-                var time = checks[i].getAttribute('msg_time');
-                tx.executeSql("DELETE FROM MSG WHERE owner=" + owner_id + " "
-                    + "AND tab_id=" + tab_id + " "
-                    + "AND time='" + enc_sql(time) + "';", [], 
+                var msg_id = checks[i].getAttribute('msg_id');
+                tx.executeSql("DELETE FROM MSG WHERE rowid=" + msg_id + ";", [], 
                     function(tx, result){
                         load_receiver(tx);
                     },
@@ -374,12 +365,8 @@ function delete_page(){
         var lenth = checks.length;
         window.db.transaction(function(tx){
             for(var i = 0; i < lenth; ++i){
-                var tab_id = checks[i].getAttribute('msg_tab_id');
-                var msg_id = checks[i].getAttribute('msg_msg_id');
-                var time = checks[i].getAttribute('msg_time');
-                tx.executeSql("DELETE FROM MSG WHERE owner=" + owner_id + " "
-                    + "AND msg_id=" + msg_id + " "
-                    + "AND time='" + enc_sql(time) + "';", [], 
+                var msg_id = checks[i].getAttribute('msg_id');
+                tx.executeSql("DELETE FROM MSG WHERE rowid=" + msg_id + ";", [],
                     function(tx, result){
                         load_receiver(tx);
                     },
@@ -396,7 +383,7 @@ function delete_receiver(){
     if(confirm("确定要删除 " + g_receiver + " 的所有记录吗？")){
         window.db.transaction(function(tx){
             tx.executeSql("DELETE FROM MSG WHERE owner=" + owner_id + " "
-                + "AND receiver='" + enc_sql(enc(g_receiver)) + "';", [], 
+                + "AND receiver='" + enc_sql(enc(g_receiver)) + "'", [], 
                 function(tx, result){
                     g_receiver_start = 0;
                     g_current_page = 0;
