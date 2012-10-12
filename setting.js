@@ -128,7 +128,7 @@ var g_receiver_count = 0;
 var g_current_page = 0;
 var g_search_keyword = "";
 var msg_count_per_page = 2;
-var max_pages_in_title = 5;
+var max_pages_in_title = 10;
 
 var elmCrtReceiver = null;
 
@@ -156,13 +156,14 @@ window.db.transaction(function(tx){
 
 $('receiver_list').onclick = function (e){
     var _target = e.target;
-    if(_target.nodeName == 'P'){
+    if(_target.nodeName == 'P' && !$.css.hasClass(_target, 'cur-receiver')){
         $.css.removeClass(elmCrtReceiver, 'cur-receiver');
         elmCrtReceiver = _target;
         $.css.addClass(elmCrtReceiver, 'cur-receiver');
         g_receiver = _target.innerText;
         g_receiver_start = 0;
         g_search_keyword = "";
+        $('btn-delall').style.display = 'inline-block';
         load_receiver_ex();
         $('q').value = '';
     }
@@ -173,17 +174,20 @@ $('message_page_title').onclick = function (e){
     if(_target.nodeName == 'A' && eid != 'curPage'){
         e.preventDefault();
         if(/pg(\d+)/.test(eid)){
-            load_record_tx(RegExp.$1);
+            load_record_tx(parseInt(RegExp.$1));
         }
         else if(eid == 'pgnew'){
-            show_title_closer();
+            navPage(-1);
         }
         else if(eid == 'pgold'){
-            show_title_ealier();
+            navPage(1);
         }
     }
 };
 $('search-btn').onclick = search;
+$('btn-delsel').onclick = delete_select;
+$('btn-delpage').onclick = delete_page;
+$('btn-delall').onclick = delete_receiver;
 
 function get_receiver_list(tx, owner_id, on_get){
     tx.executeSql("SELECT DISTINCT receiver FROM MSG WHERE owner=" + owner_id + ";", [], 
@@ -261,9 +265,9 @@ function load_record(tx){
         for(var i = lenth;i-- > 0;){
             s += '<div class="msg_item">';
             s += '<input name="check_delete" type="checkbox"' + '" msg_time="' + enc_html(rows.item(i).time) + '" />';
-            s += '<div class="msg_sender">' + enc_html(dec(rows.item(i).sender)) + '</div>';
-            s += '<div class="msg_time">' + enc_html(rows.item(i).time) + '</div>';
-            s += '<div class="msg_text">' + dec(rows.item(i).text) + '</div>';
+            s += '<span class="msg_sender">' + enc_html(dec(rows.item(i).sender)) + '</span>';
+            s += '<span class="msg_time">' + enc_html(rows.item(i).time) + '</span>';
+            s += '<p class="msg_text">' + dec(rows.item(i).text) + '</p>';
             s += '</div>';
         }
         s += "</form>";
@@ -288,29 +292,25 @@ function load_record_tx(toPage){
     });
 }
 
-function show_title_closer(){
-    g_current_page -= max_pages_in_title;
-    if(g_current_page < 0)
-        g_current_page = 0;
+function navPage(iDirect){
+    var title_page_start = Math.floor(g_current_page / max_pages_in_title);
+    g_current_page = (title_page_start + iDirect) * max_pages_in_title;
     show_title();
-}
-
-function show_title_ealier(){
-    g_current_page += max_pages_in_title;
-    if(g_current_page * msg_count_per_page < g_receiver_count)
-        show_title();
+    g_receiver_start = g_current_page * msg_count_per_page;
+    window.db.transaction(function(tx){
+        load_record(tx);
+    });
 }
 
 function show_title(){
     var s = '';
-    var i;
-
     var title_page_start = Math.floor(g_current_page / max_pages_in_title) * max_pages_in_title;
 
-    if(title_page_start > 0)
-        s += '<a id="pgnew" href="#">更近</a>';
-
-    for(i = title_page_start; i * msg_count_per_page < g_receiver_count && i < title_page_start + max_pages_in_title; ++i){
+    if(title_page_start > 0){
+        s += '<a id="pgnew" href="#" class="pagnav-btn">更近</a>';
+    }
+    var maxPage = Math.min(g_receiver_count/msg_count_per_page, title_page_start + max_pages_in_title);
+    for(var i = title_page_start;i < maxPage;i++){
         if(i != g_current_page){
             s += '<a id="pg' + i +'" href="#">' + (i+1) + '</a>';
         }
@@ -318,21 +318,19 @@ function show_title(){
             s += '<a id="curPage">' + (i+1) + '</a>';
         }
     }
-    if(i * msg_count_per_page < g_receiver_count)
-        s += '<a id="pgold" href="#">更早</a>';
+    if(i * msg_count_per_page < g_receiver_count){
+        s += '<a id="pgold" href="#" class="pagnav-btn">更早</a>';
+    }
 
     $('message_page_title').innerHTML = s;
-
 }
 
 function load_receiver(tx){
     var receiver = g_receiver;
     get_message_count(tx, owner_id, receiver, g_search_keyword, function(count){
         g_receiver_count = count;
-
         g_current_page = Math.floor(g_receiver_start / msg_count_per_page);
         show_title();
-
         load_record(tx);
     });
 }
@@ -441,6 +439,6 @@ function search(){
     }
     else{
         load_receiver_ex();
-        $('but_del_all').style.display = 'none';
+        $('btn-delall').style.display = 'none';
     }
 }

@@ -11,10 +11,11 @@
 	        <div id='message_title'>
 	            <div id='message_page_title'></div>
 	            <div id='message_buttons'>
-	                <button onclick="delete_select();">删除选中的记录</button>
-	                <button onclick="delete_page();">删除本页记录</button>
-	                <button id="but_del_all" onclick="delete_receiver();">删除该聊天对象的所有记录</button>
-	                <input id="q" placeholder="要搜索的聊天内容"><button id="search-btn">搜索</button>
+	                <a id="btn-delsel" class="custom-btn" href="#">删除选中记录</a>
+	                <a id="btn-delpage" class="custom-btn" href="#">删除本页记录</a>
+	                <a id="btn-delall" class="custom-btn" href="#">删除该聊天对象所有记录</a>
+	                <input id="q" placeholder="输入聊天内容">
+	                <a class="custom-btn" id="search-btn" href="#">搜索</a>
 	            </div>
 	        </div>
 	        <div id='message_list'></div>

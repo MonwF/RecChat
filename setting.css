@@ -1,5 +1,22 @@
-﻿body{
+﻿body, input{
     font: 12px normal "微软雅黑";
+}
+
+p{margin: 0;}
+
+.custom-btn{
+    margin-left: 4px;
+    border-radius: 3px;
+    box-shadow:0 1px 3px rgba(0, 0, 0, 0.5);
+    color:#FFFFFF;
+    background-color:#2DAEBF;
+    text-shadow:0 -1px 1px rgba(0, 0, 0, 0.25);
+    padding:2px 8px;
+    text-decoration: none;
+}
+.custom-btn:hover{
+    background-color: #41BDDA;
+    color: #FFC;
 }
 
 #receiver_area{
@@ -17,25 +34,14 @@
     background-color: #F3F3F3;
 }
 
-#receiver_title {
+#receiver_title{
     font-weight: bold;
     white-space: nowrap;
     margin-bottom: 2px;
     color: #333;
 }
 
-#receiver_title  a{
-    font-weight: normal;
-    margin-left: 30px;
-    float: right;
-    color: #4588FF;
-    text-decoration: none;
-}
-#receiver_title a:hover{
-    color: #F60;
-}
-
-#message_area   {
+#message_area {
     float: left;
     width: 100%;
 }
@@ -47,19 +53,40 @@
     height: 30px;
 }
 
-#message_page_title {
+#message_page_title{
     float: left;
     margin-top: 6px;
 }
 
-#message_page_title > a {
-    padding-left: 10px;
+#message_page_title .pagnav-btn{
+    color: #4588FF;
+    text-decoration: none;
 }
 
-#message_buttons    {
+#message_page_title .pagnav-btn:hover{
+    color: #F60;
+}
+
+#message_page_title  a {
+    margin-left: 10px;
+}
+
+#message_buttons{
     float: right;
-    margin-right: 6px;
-    margin-top: 2px;
+    overflow: hidden;
+    margin-right: 8px;
+    height: 24px;
+    padding-top: 5px;
+}
+#message_buttons input{
+    margin: 0 0 0 4px;
+    padding: 0 0 0 2px;
+    border: 1px solid #A6B1B7;
+    outline: none;
+    height: 18px;
+}
+#message_buttons input:focus{
+    border: 1px solid #66C6FC;
 }
 
 #message_list {
@@ -93,26 +120,22 @@
     background-color: #efe;
 }
 
-.msg_item > input   {
-    float: left;
-    margin-top: 4px;
-    margin-left: 6px;
+.msg_item input {
+    vertical-align: text-bottom;
+    margin: 0 6px 2px;
 }
 
 .msg_sender {
-    display: inline-block;
     font-weight: bold;
-    font-size: 12px;
-    margin: 2px 4px;
+    margin-right: 8px;
     color: #C65D09;
 }
 
-.msg_time   {
-    display: inline-block;
+.msg_time{
     color: #333;
 }
 
-.msg_text   {
+.msg_text{
     color: #40B31A;
     margin-left: 24px;
     margin-top: 2px;
