@@ -260,17 +260,16 @@ function load_record(tx){
     if(reverse_count < 0) reverse_count = 0;
 
     get_message_list(tx, owner_id, receiver, g_search_keyword, reverse_start, reverse_count, function(rows){
-        var s = '<form name="fm">';
         var lenth = rows.length;
+        var s = '';
         for(var i = lenth;i-- > 0;){
             s += '<div class="msg_item">';
-            s += '<input name="check_delete" type="checkbox"' + '" msg_time="' + enc_html(rows.item(i).time) + '" />';
+            s += '<input class="check_delete" type="checkbox"' + '" msg_time="' + enc_html(rows.item(i).time) + '" />';
             s += '<span class="msg_sender">' + enc_html(dec(rows.item(i).sender)) + '</span>';
             s += '<span class="msg_time">' + enc_html(rows.item(i).time) + '</span>';
             s += '<p class="msg_text">' + dec(rows.item(i).text) + '</p>';
             s += '</div>';
         }
-        s += "</form>";
         $('message_list').innerHTML = s;
     });
 }
@@ -342,28 +341,15 @@ function load_receiver_ex(){
 }
 
 function delete_select(){
-    var checks = document.getElementsByName("check_delete");
-    var select_length = 0;
+    var checks = document.querySelectorAll("#message_list .check_delete:checked");
     var lenth = checks.length;
-    for(var i = 0; i < lenth; ++i)
-    {
-        if(checks[i].checked)
-            ++select_length;
-    }
-    if(select_length == 0)
-    {
+    if(lenth == 0){
         alert("请先选择您要删除的记录。");
         return;
     }
-    if(!confirm("确定要删除选中的 "+select_length+"条记录吗？"))
-        return;
-
-    window.db.transaction(function(tx)
-    {
-        for(var i = 0; i < lenth; ++i)
-        {
-            if(checks[i].checked)
-            {
+    if(confirm("确定要删除选中的 " + lenth + "条记录吗？")){
+        window.db.transaction(function(tx){
+            for(var i = 0; i < lenth; ++i){
                 var tab_id = checks[i].getAttribute('msg_tab_id');
                 var msg_id = checks[i].getAttribute('msg_msg_id');
                 var time = checks[i].getAttribute('msg_time');
@@ -378,56 +364,51 @@ function delete_select(){
                     }
                 );
             }
-        }
-    });
+        });
+    }
 }
 
 function delete_page(){
-    if(!confirm("确定要删除本页的所有记录吗？"))
-        return;
+    if(confirm("确定要删除本页的所有记录吗？")){
+        var checks = document.querySelectorAll("#message_list .check_delete");
+        var lenth = checks.length;
+        window.db.transaction(function(tx){
+            for(var i = 0; i < lenth; ++i){
+                var tab_id = checks[i].getAttribute('msg_tab_id');
+                var msg_id = checks[i].getAttribute('msg_msg_id');
+                var time = checks[i].getAttribute('msg_time');
+                tx.executeSql("DELETE FROM MSG WHERE owner=" + owner_id + " "
+                    + "AND msg_id=" + msg_id + " "
+                    + "AND time='" + enc_sql(time) + "';", [], 
+                    function(tx, result){
+                        load_receiver(tx);
+                    },
+                    function(tx, error){
+                        load_receiver(tx);
+                    }
+                );
+            }
+        });
+    }
+}
 
-    var checks = document.getElementsByName("check_delete");
-    var lenth = checks.length;
-    window.db.transaction(function(tx){
-        for(var i = 0; i < lenth; ++i){
-            var tab_id = checks[i].getAttribute('msg_tab_id');
-            var msg_id = checks[i].getAttribute('msg_msg_id');
-            var time = checks[i].getAttribute('msg_time');
+function delete_receiver(){
+    if(confirm("确定要删除 " + g_receiver + " 的所有记录吗？")){
+        window.db.transaction(function(tx){
             tx.executeSql("DELETE FROM MSG WHERE owner=" + owner_id + " "
-                + "AND msg_id=" + msg_id + " "
-                + "AND time='" + enc_sql(time) + "';", [], 
+                + "AND receiver='" + enc_sql(enc(g_receiver)) + "';", [], 
                 function(tx, result){
+                    g_receiver_start = 0;
+                    g_current_page = 0;
+                    g_search_keyword = "";
                     load_receiver(tx);
                 },
                 function(tx, error){
                     load_receiver(tx);
                 }
             );
-        }
-    });
-}
-
-function delete_receiver(){
-    var receiver = g_receiver;
-    if(!confirm("确定要删除 " + receiver + " 的所有记录吗？")){
-        return;
+        }); 
     }
-
-    window.db.transaction(function(tx)
-    {
-        tx.executeSql("DELETE FROM MSG WHERE owner=" + owner_id + " "
-            + "AND receiver='" + enc_sql(enc(receiver)) + "';", [], 
-            function(tx, result){
-                g_receiver_start = 0;
-                g_current_page = 0;
-                g_search_keyword = "";
-                load_receiver(tx);
-            },
-            function(tx, error){
-                load_receiver(tx);
-            }
-        );
-    });
 }
 
 function search(){

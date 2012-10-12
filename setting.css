@@ -74,7 +74,7 @@ p{margin: 0;}
 #message_buttons{
     float: right;
     overflow: hidden;
-    margin-right: 8px;
+    margin-right: 10px;
     height: 24px;
     padding-top: 5px;
 }
