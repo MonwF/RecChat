@@ -2,7 +2,7 @@
    "manifest_version":2,
    "background":{
       "scripts": ["background-min.js"],
-      "persistent": true
+      "persistent": false
    },
    "content_scripts": [{
       "matches": ["http://web.qq.com/"],
