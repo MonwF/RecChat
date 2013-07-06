@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
-    <link type="text/css" rel="stylesheet" href="setting-min.css">
+    <link type="text/css" rel="stylesheet" href="setting.css">
     <title>查看消息记录</title>
 </head>
 <body>
@@ -12,11 +12,11 @@
 		        <div id='message_title'>
 		            <div id='message_page_title'></div>
 		            <div id='message_buttons'>
-		                <a id="btn-delsel" class="custom-btn" href="#">删除选中记录</a>
-		                <a id="btn-delpage" class="custom-btn" href="#">删除本页记录</a>
-		                <a id="btn-delall" class="custom-btn" href="#">删除该聊天对象所有记录</a>
-		                <input id="q" placeholder="输入聊天内容">
-		                <a class="custom-btn" id="search-btn" href="#">搜索</a>
+		                <div id="btn-delsel" class="custom-btn">删除选中记录</div>
+		                <div id="btn-delpage" class="custom-btn">删除本页记录</div>
+		                <div id="btn-delall" class="custom-btn">删除该对象全部记录</div>
+		                <input id="kw-input" class="keyword-input" placeholder="输入聊天内容">
+		                <div class="custom-btn" id="search-btn">搜索</div>
 		            </div>
 		        </div>
 		        <div id='message_list'></div>
@@ -28,6 +28,6 @@
 		</div>
 		<div style="clear:both;"></div>
 	</div>
-    <script type="text/javascript" src="setting-min.js"></script>
+    <script type="text/javascript" src="setting.js"></script>
 </body>
 </html>

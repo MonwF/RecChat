@@ -1,25 +1,30 @@
 {
    "manifest_version":2,
    "background":{
-      "scripts": ["background-min.js"],
+      "scripts": ["background.js"],
       "persistent": false
-   },
+    },
    "content_scripts": [{
-      "matches": ["http://web.qq.com/"],
-      "js": ["chat-min.js"]
-   }],
-   "description": "保存webQQ产生的聊天记录，让您随时回味QQ消息记录",
+      "matches": ["http://web.qq.com/*", "http://web2.qq.com/*"],
+      "js": ["chat.js"]
+    }],
+   "web_accessible_resources": ["webqq_hook.js"],
+   "description": "保存webQQ产生的聊天记录，让您随时回味记忆",
    "icons": {
       "128": "chat_128.png",
-      "48": "chat_48.png"
-   },
-   "name": "webqq 聊天记录保存工具",
+      "48": "chat_48.png",
+      "16": "chat_24.png"
+    },
+   "name": "webqq 聊天记录保存器",
    "page_action": {
-      "default_icon": "chat_48.png",
-      "default_title": "查看已保存的QQ聊天记录"
-   },
-   "permissions": ["tabs", "http://web.qq.com/", "unlimitedStorage" ],
+        "default_icon": {
+          "19": "chat_24.png",
+          "38": "chat_48.png"
+        },
+        "default_title": "查看已保存聊天记录"
+    },
+   "permissions": ["tabs", "http://web.qq.com/", "http://web2.qq.com/", "unlimitedStorage" ],
    "update_url": "http://clients2.google.com/service/update2/crx",
-   "version": "1.1",
-   "minimum_chrome_version": "21.0.0"
+   "version": "1.2.2",
+   "minimum_chrome_version": "22.0.0"
 }

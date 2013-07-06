@@ -25,7 +25,7 @@ function enc_html(s){
 function enc(s){
     var lenth = s.length;
     var arr = [];
-    for(var i = 0; i < lenth; ++i){
+    for(var i = 0;i < lenth;++i){
         arr[i] = s.charCodeAt(i) + 1;
     }
     return arr.join("/");
@@ -35,10 +35,8 @@ function dec(s){
     var rt = "";
     var arr = s.split("/");
     var lenth = s.length;
-    for(var i = 0; i < lenth; ++i){
-        if(arr[i]){
-            rt += String.fromCharCode(arr[i] - 1);
-        }
+    for(var i = 0; i < lenth;++i){
+        rt += String.fromCharCode(arr[i] - 1);
     }
     return rt;
 }
@@ -128,7 +126,7 @@ var g_receiver_count = 0;
 var g_current_page = 0;
 var g_search_keyword = "";
 var msg_count_per_page = 20;
-var max_pages_in_title = 10;
+var max_pages_in_title = 8;
 
 var elmCrtReceiver = null;
 
@@ -163,13 +161,13 @@ $('receiver_list').onclick = function (e){
         g_search_keyword = "";
         $('btn-delall').style.display = 'inline-block';
         load_receiver_ex();
-        $('q').value = '';
+        $('kw-input').value = '';
     }
 };
 $('message_page_title').onclick = function (e){
     var _target = e.target;
     var eid = _target.id;
-    if(_target.nodeName == 'A' && eid != 'curPage'){
+    if(_target.nodeName == 'A' && !$.css.hasClass(_target, 'current-page')){
         e.preventDefault();
         if(/pg(\d+)/.test(eid)){
             load_record_tx(parseInt(RegExp.$1));
@@ -186,6 +184,23 @@ $('search-btn').onclick = search;
 $('btn-delsel').onclick = delete_select;
 $('btn-delpage').onclick = delete_page;
 $('btn-delall').onclick = delete_receiver;
+$('kw-input').onkeypress = function (evt){
+    if(evt.keyCode == 13){
+        search();
+    }
+};
+
+$('message_list').onclick = function (evt){
+    var _target = evt.target;
+    if($.css.hasClass(_target, 'check-btn')){
+        if($.css.hasClass(_target, 'btn-checked')){
+            $.css.removeClass(_target, 'btn-checked');
+        }
+        else {
+            $.css.addClass(_target, 'btn-checked');
+        }
+    }
+};
 
 function get_receiver_list(tx, owner_id, on_get){
     tx.executeSql("SELECT DISTINCT receiver FROM MSG WHERE owner=" + owner_id + ";", [], 
@@ -259,9 +274,9 @@ function load_record(tx){
         for(var i = lenth - 1;i >= 0;i--){
             msg = rows.item(i);
             s += '<div class="msg_item">';
-            s += '<input class="check_delete" type="checkbox"' + '" msg_id="' + msg.rowid + '" />';
+            s += '<div class="check-btn" msg_id="' + msg.rowid + '" /></div><p class="msg-meta clearfix">';
             s += '<span class="msg_sender">' + enc_html(dec(msg.sender)) + '</span>';
-            s += '<span class="msg_time">' + enc_html(msg.time) + '</span>';
+            s += '<span class="msg_time">' + enc_html(msg.time) + '</span></p>';
             s += '<p class="msg_text">' + dec(msg.text) + '</p>';
             s += '</div>';
         }
@@ -270,16 +285,14 @@ function load_record(tx){
 }
 
 function load_record_tx(toPage){
-    var oldE = $("curPage");
-    oldE.id = "pg" + g_current_page;
-    oldE.setAttribute("href", '#');
+    var oldE = $('message_page_title').querySelector('.current-page');
+    $.css.removeClass(oldE, 'current-page');
     
     g_current_page = toPage;
     g_receiver_start = g_current_page * msg_count_per_page;
     
     var newE = $("pg" + g_current_page);
-    newE.id = 'curPage';
-    newE.removeAttribute("href");
+    $.css.addClass(newE, 'current-page');
     
     window.db.transaction(function(tx){
         load_record(tx);
@@ -306,10 +319,10 @@ function show_title(){
     var maxPage = Math.min(g_receiver_count/msg_count_per_page, title_page_start + max_pages_in_title);
     for(var i = title_page_start;i < maxPage;i++){
         if(i != g_current_page){
-            s += '<a id="pg' + i +'" href="#">' + (i+1) + '</a>';
+            s += '<a id="pg' + i +'" class="page-num" href="#">' + (i+1) + '</a>';
         }
         else {
-            s += '<a id="curPage">' + (i+1) + '</a>';
+            s += '<a id="pg' + i + '" class="page-num current-page" href="#">' + (i+1) + '</a>';
         }
     }
     if(i * msg_count_per_page < g_receiver_count){
@@ -336,16 +349,16 @@ function load_receiver_ex(){
 }
 
 function delete_select(){
-    var checks = document.querySelectorAll("#message_list .check_delete:checked");
-    var lenth = checks.length;
+    var msgsToDel = $('message_list').getElementsByClassName("btn-checked");
+    var lenth = msgsToDel.length;
     if(lenth == 0){
-        alert("请先选择您要删除的记录。");
+        alert("请选择要删除的记录！");
         return;
     }
-    if(confirm("确定要删除选中的 " + lenth + "条记录吗？")){
+    if(confirm("确定删除选中的 " + lenth + " 条记录吗？")){
         window.db.transaction(function(tx){
             for(var i = 0; i < lenth; ++i){
-                var msg_id = checks[i].getAttribute('msg_id');
+                var msg_id = msgsToDel[i].getAttribute('msg_id');
                 tx.executeSql("DELETE FROM MSG WHERE rowid=" + msg_id + ";", [], 
                     function(tx, result){
                         load_receiver(tx);
@@ -360,12 +373,12 @@ function delete_select(){
 }
 
 function delete_page(){
-    if(confirm("确定要删除本页的所有记录吗？")){
-        var checks = document.querySelectorAll("#message_list .check_delete");
-        var lenth = checks.length;
+    if(confirm("确定删除本页的所有记录吗？")){
+        var msgsToDel = $('message_list').getElementsByClassName("check-btn");
+        var lenth = msgsToDel.length;
         window.db.transaction(function(tx){
             for(var i = 0; i < lenth; ++i){
-                var msg_id = checks[i].getAttribute('msg_id');
+                var msg_id = msgsToDel[i].getAttribute('msg_id');
                 tx.executeSql("DELETE FROM MSG WHERE rowid=" + msg_id + ";", [],
                     function(tx, result){
                         load_receiver(tx);
@@ -380,7 +393,7 @@ function delete_page(){
 }
 
 function delete_receiver(){
-    if(confirm("确定要删除 " + g_receiver + " 的所有记录吗？")){
+    if(confirm("确定删除 " + g_receiver + " 的所有记录吗？")){
         window.db.transaction(function(tx){
             tx.executeSql("DELETE FROM MSG WHERE owner=" + owner_id + " "
                 + "AND receiver='" + enc_sql(enc(g_receiver)) + "'", [], 
@@ -399,11 +412,11 @@ function delete_receiver(){
 }
 
 function search(){
-    var search_keyword = $('q').value;
-    g_search_keyword = search_keyword.replace(/^\s*|\s*$/g, "");
+    var search_keyword = $('kw-input').value;
+    g_search_keyword = search_keyword.trim();
     if(g_search_keyword === ""){
-        alert("请输入您要搜索的聊天内容！");
-        $('q').focus();
+        alert("请输入要搜索的聊天内容！");
+        $('kw-input').focus();
     }
     else{
         load_receiver_ex();
