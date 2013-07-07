@@ -39,7 +39,7 @@ chrome.runtime.onMessage.addListener(
         if(sender.tab.incognito){
             return true; //Do not support record message in incognito mode
         }
-        var cmdType = request.cmd;
+        var cmdType = request.cmd, clcType = '';
         if(cmdType == "storeMessage"){
             db_add_record(
                 request.myUin,
@@ -51,9 +51,16 @@ chrome.runtime.onMessage.addListener(
         }
         else if(cmdType == "showBrowserIcon"){
             chrome.pageAction.show(sender.tab.id);
+            ga('send', 'event', 'webqq', 'login', 'login success');
         }
         else if(cmdType == "hideBrowserIcon"){
             chrome.pageAction.hide(sender.tab.id);
+        }
+        else if(cmdType == "collect"){
+        	clcType = request.ctype
+        	if(clcType == 'openwebqq'){
+        		ga('send', 'event', 'webqq', 'enter', 'enter webqq page');
+        	}
         }
         return true;
     }
@@ -61,11 +68,38 @@ chrome.runtime.onMessage.addListener(
 
 chrome.pageAction.onClicked.addListener(
     function(tab){
+    	ga('send', 'event', 'webqq', 'pageAction', 'click pageAction icon');
         chrome.tabs.sendMessage(tab.id, {cmd: 'getLoginUin'}, function(uin){
             if(uin){
                 chrome.tabs.create({url: 'setting.html?' + enc(uin)});
             }
         });
-});
+	}
+);
 
 db_init();
+
+(function(i, s, o, g, r, a, m){
+    i['GoogleAnalyticsObject'] = r;
+    i[r] = i[r] || function(){
+        (i[r].q = i[r].q || []).push(arguments)
+    }, i[r].l = 1 * new Date();
+    a = s.createElement(o),
+    m = s.getElementsByTagName(o)[0];
+    a.async = 1;
+    a.src = g;
+    m.parentNode.insertBefore(a,m);
+})(window, document, 'script', 'analytics.js','ga');
+ga('create', 'UA-24091254-4');
+ga('set', 'checkProtocolTask', null);
+
+chrome.runtime.onStartup.addListener(function(){
+	ga('send', 'event', 'crx', 'startup', 'extension launched');
+});
+
+chrome.runtime.onInstalled.addListener(function(details){
+	if(details.reason == 'install'){
+		ga('send', 'event', 'crx', 'install', 'extension installed');
+        ga('send', 'event', 'crx', 'startup', 'extension launched');
+	}
+});

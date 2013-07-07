@@ -1,6 +1,6 @@
 {
-   "manifest_version":2,
-   "background":{
+   "manifest_version": 2,
+   "background": {
       "scripts": ["background.js"],
       "persistent": false
     },
@@ -25,6 +25,6 @@
     },
    "permissions": ["tabs", "http://web.qq.com/", "http://web2.qq.com/", "unlimitedStorage" ],
    "update_url": "http://clients2.google.com/service/update2/crx",
-   "version": "1.2.2",
+   "version": "1.3",
    "minimum_chrome_version": "22.0.0"
 }

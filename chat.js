@@ -57,3 +57,8 @@ chrome.runtime.onMessage.addListener(
         }
     }
 );
+
+chrome.runtime.sendMessage({
+    'cmd': 'collect',
+    'ctype': 'openwebqq'
+});
